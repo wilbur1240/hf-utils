@@ -64,6 +64,18 @@ class ModelCLI:
         delete_parser.add_argument('repo_id', help='Repository ID to delete')
         delete_parser.add_argument('--force', action='store_true', help='Skip confirmation')
         
+        # Delete file command
+        delete_file_parser = model_subparsers.add_parser('delete-file', help='Delete specific file from model')
+        delete_file_parser.add_argument('repo_id', help='Repository ID')
+        delete_file_parser.add_argument('file_path', help='Path of file to delete')
+        delete_file_parser.add_argument('--message', help='Commit message')
+        delete_file_parser.add_argument('--force', action='store_true', help='Skip confirmation')
+        
+        # List files command
+        list_files_parser = model_subparsers.add_parser('list-files', help='List files in model repository')
+        list_files_parser.add_argument('repo_id', help='Repository ID')
+        list_files_parser.add_argument('--revision', help='Specific revision')
+
         # Info
         info_parser = model_subparsers.add_parser('info', help='Get model info')
         info_parser.add_argument('repo_id', help='Repository ID')
@@ -86,6 +98,10 @@ class ModelCLI:
                 return self._handle_download(args)
             elif args.model_action == 'download-file':
                 return self._handle_download_file(args)
+            elif args.model_action == 'delete-file':
+                return self._handle_delete_file(args)
+            elif args.model_action == 'list_files':
+                return self._handle_list_files(args)
             elif args.model_action == 'list':
                 return self._handle_list(args)
             elif args.model_action == 'delete':
@@ -188,6 +204,51 @@ class ModelCLI:
         print(f"✅ Model '{args.repo_id}' deleted successfully!")
         return 0
     
+    def _handle_delete_file(self, args):
+        """Handle file deletion."""
+        from huggingface_hub import delete_file
+        
+        if not args.force:
+            response = input(f"Delete '{args.file_path}' from {args.repo_id}? (y/N): ")
+            if response.lower() not in ['y', 'yes']:
+                print("Deletion cancelled")
+                return 0
+        
+        try:
+            delete_file(
+                path_in_repo=args.file_path,
+                repo_id=args.repo_id,
+                repo_type="model",
+                commit_message=args.message or f"Delete {args.file_path}",
+                token=self.config.token
+            )
+            print(f"✅ Successfully deleted: {args.file_path}")
+            return 0
+        except Exception as e:
+            print(f"❌ Failed to delete file: {e}")
+            return 1
+
+    def _handle_list_files(self, args):
+        """Handle file listing."""
+        from huggingface_hub import list_repo_files
+        
+        try:
+            files = list_repo_files(
+                args.repo_id,
+                repo_type="model",
+                revision=args.revision,
+                token=self.config.token
+            )
+            
+            print(f"📁 Files in {args.repo_id}:")
+            for file_path in sorted(files):
+                print(f"  📄 {file_path}")
+            
+            return 0
+        except Exception as e:
+            print(f"❌ Failed to list files: {e}")
+            return 1
+
     def _handle_info(self, args) -> int:
         """Handle model info."""
         info = self.downloader.get_model_info(args.repo_id, args.revision)

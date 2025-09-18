@@ -15,6 +15,9 @@ from .auth.manager import AuthManager
 from .models.upload import ModelUploader
 from .models.download import ModelDownloader
 from .models.manage import ModelManager
+from .models.selective_upload import SelectiveUploader
+from .models.selective_upload import FileUploadConfig
+from .models.selective_upload import upload_single_file, upload_files_by_pattern, update_model_files, update_dataset_files
 from .datasets.upload import DatasetUploader
 from .datasets.download import DatasetDownloader
 from .datasets.manage import DatasetManager
@@ -38,6 +41,12 @@ __all__ = [
     "ModelUploader",
     "ModelDownloader", 
     "ModelManager",
+    "SelectiveUploader",
+    "FileUploadConfig",
+    "upload_single_file",
+    "upload_files_by_pattern",
+    "update_model_files",
+    "update_dataset_files",
     # Dataset operations
     "DatasetUploader",
     "DatasetDownloader",

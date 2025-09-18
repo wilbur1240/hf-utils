@@ -121,6 +121,21 @@ hf-utils model upload ./my-model username/my-model --private
 hf-utils model download bert-base-uncased --destination ./models/bert
 hf-utils model list --author username
 hf-utils model search "text classification" --limit 10
+# Update just the model weights
+hf-utils model update myuser/my-model model.safetensors
+
+# Upload all config files
+hf-utils model upload-pattern myuser/my-model "*.json" --message "Update configs"
+
+# Upload with custom paths
+hf-utils model upload-files myuser/my-model data.csv labels.txt \
+  --local-base ./datasets --remote-base data/
+
+# Preview what would be uploaded
+hf-utils model upload-pattern myuser/my-model "*.py" --dry-run
+
+# Use a config file
+hf-utils model upload-config my_upload_config.json --verbose
 
 # Dataset operations  
 hf-utils dataset upload ./data.csv username/my-dataset
